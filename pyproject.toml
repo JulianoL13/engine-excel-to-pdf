@@ -1,7 +1,91 @@
 [project]
 name = "engine-excel-to-pdf"
 version = "0.1.0"
-description = "Add your description here"
+description = "Motor Python para extração, validação e geração de certificados de controle de pragas a partir de planilhas Excel"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+authors = [
+    { name = "Juliano Lopes", email = "seu@email.com" }
+]
+license = { text = "MIT" }
+keywords = ["pdf", "excel", "certificado", "controle-pragas", "extractor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+	"openpyxl>=3.1.5",
+	"python-dateutil>=2.9.0",
+	"Jinja2>=3.1.4",
+	"WeasyPrint>=61.2",
+]
+
+[project.optional-dependencies]
+dev = [
+	"pytest>=8.0.0",
+	"pytest-cov>=4.1.0",
+	"pytest-xdist>=3.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/JulianoL13/engine-excel-to-pdf"
+Repository = "https://github.com/JulianoL13/engine-excel-to-pdf"
+Issues = "https://github.com/JulianoL13/engine-excel-to-pdf/issues"
+
+[project.scripts]
+engine-excel-to-pdf = "engine_excel_to_pdf.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["engine_excel_to_pdf"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"engine_excel_to_pdf/assets" = "engine_excel_to_pdf/assets"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--strict-markers",
+    "--cov=engine_excel_to_pdf",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-branch",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["engine_excel_to_pdf"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
