@@ -8,3 +8,32 @@ wheels/
 
 # Virtual environments
 .venv
+venv/
+env/
+
+# uv
+.python-version
+uv.lock
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Runtime outputs
+motor_certificados/
+results/
+resultados/
+
+# OS
+.DS_Store
+Thumbs.db
