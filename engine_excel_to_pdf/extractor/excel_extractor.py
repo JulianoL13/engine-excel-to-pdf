@@ -25,6 +25,7 @@ class ExcelExtractorConfig:
     metodo_quantidade_column: int
     metodo_start_row: int
     metodo_end_row: Optional[int] = None
+    certificado_map_fallbacks: Optional[dict[str, List[str]]] = None
 
 
 DEFAULT_CONFIG = ExcelExtractorConfig(
@@ -38,6 +39,9 @@ DEFAULT_CONFIG = ExcelExtractorConfig(
         "data_execucao": "E21",
         "pragas_tratadas": "F22",
         "data_validade": "B48",
+    },
+    certificado_map_fallbacks={
+        "nome_fantasia": ["D17"],  # Fallback for alternative template format
     },
     classe_quimica_column=6,
     classe_quimica_start_row=25,
@@ -59,7 +63,7 @@ class ExcelExtractor:
         from openpyxl import load_workbook
         
         workbook = load_workbook(file_path, data_only=True)
-        worksheet = workbook.active
+        worksheet = self._select_worksheet(workbook) or workbook.active
 
         certificado_data = self._extract_certificado(worksheet, file_path.name)
         produtos = self._extract_produtos(worksheet)
@@ -67,10 +71,31 @@ class ExcelExtractor:
 
         return CertificadoBundle(certificado=certificado_data, produtos=produtos, metodos=metodos)
 
+    def _select_worksheet(self, workbook):
+        for ws in getattr(workbook, "worksheets", []):
+            numero = ws[self.config.certificado_map["numero_certificado"]].value if ws[self.config.certificado_map["numero_certificado"]].value is not None else ""
+            licenca = ws[self.config.certificado_map["numero_licenca"]].value if ws[self.config.certificado_map["numero_licenca"]].value is not None else ""
+            if str(numero).strip() and str(licenca).strip():
+                return ws
+        return None
+
     def _extract_certificado(self, worksheet: "Worksheet", arquivo_origem: str) -> Certificado:
         values: dict[str, str] = {}
         for field, cell_ref in self.config.certificado_map.items():
+            # Try primary cell location
             cell_value = worksheet[cell_ref].value if worksheet[cell_ref].value is not None else ""
+            
+            # If empty and field has fallbacks configured, try alternative cells
+            if (not cell_value or not str(cell_value).strip()) and \
+               self.config.certificado_map_fallbacks and \
+               field in self.config.certificado_map_fallbacks:
+                
+                for fallback_cell in self.config.certificado_map_fallbacks[field]:
+                    fallback_value = worksheet[fallback_cell].value if worksheet[fallback_cell].value is not None else ""
+                    if fallback_value and str(fallback_value).strip():
+                        cell_value = fallback_value
+                        break  # Use first non-empty value found
+            
             values[field] = normalize_whitespace(str(cell_value))
 
         data_execucao = parse_pt_br_date(values["data_execucao"])
