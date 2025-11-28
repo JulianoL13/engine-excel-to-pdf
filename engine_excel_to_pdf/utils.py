@@ -151,11 +151,13 @@ def generate_unique_filename(certificado: "Certificado", extensao: str = "") -> 
     numero_cert = sanitize_certificate_filename(certificado.numero_certificado)
     
     timestamp = certificado.data_cadastro.strftime("%Y%m%d-%H%M%S")
+    id_suffix = (certificado.id or "")[:4]
     
     if not extensao.startswith(".") and extensao:
         extensao = f".{extensao}"
     
-    return f"{nome_fantasia}_{cnpj_short}_{numero_cert}_{timestamp}{extensao}"
+    suffix = f"-{id_suffix}" if id_suffix else ""
+    return f"{nome_fantasia}_{cnpj_short}_{numero_cert}_{timestamp}{suffix}{extensao}"
 
 
 def ensure_path(path_like) -> Path:

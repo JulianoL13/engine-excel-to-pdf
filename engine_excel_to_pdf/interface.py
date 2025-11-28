@@ -67,25 +67,23 @@ class MotorCertificados:
 
     def _persistir_bundle(self, bundle: CertificadoBundle) -> Dict[str, Path | Certificado]:
         existing = self.csv_manager.get_bundle_by_arquivo(bundle.certificado.arquivo_origem)
-        
-        if existing:
-            planilha = self.spreadsheet_generator.consolidated_path
-            
-            pdf_pattern = f"*{existing.certificado.cnpj.replace('.', '').replace('/', '').replace('-', '')[:8]}*{existing.certificado.numero_certificado.replace('/', '-')}*.pdf"
-            pdfs = list(self.pdf_generator.output_dir.glob(pdf_pattern))
-            
-            if pdfs:
-                pdf = pdfs[0]
-            else:
-                pdf = self.pdf_generator.generate(existing)
-            
-            return {
-                "certificado": existing.certificado,
-                "planilha": planilha,
-                "pdf": pdf,
-            }
-        
-        certificado = self.csv_manager.append_bundle(bundle, skip_if_exists=True)
+
+        if existing and not self.config.sobrescrever_existentes:
+            if existing.certificado.id == bundle.certificado.id:
+                planilha = self.spreadsheet_generator.consolidated_path
+                pdf_pattern = f"*{existing.certificado.cnpj.replace('.', '').replace('/', '').replace('-', '')[:8]}*{existing.certificado.numero_certificado.replace('/', '-')}*.pdf"
+                pdfs = list(self.pdf_generator.output_dir.glob(pdf_pattern))
+                if pdfs:
+                    pdf = pdfs[0]
+                else:
+                    pdf = self.pdf_generator.generate(existing)
+                return {
+                    "certificado": existing.certificado,
+                    "planilha": planilha,
+                    "pdf": pdf,
+                }
+
+        certificado = self.csv_manager.append_bundle(bundle, skip_if_exists=False)
         return self._generate_outputs(bundle, certificado)
 
     def _generate_outputs(

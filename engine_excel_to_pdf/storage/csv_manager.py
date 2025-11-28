@@ -74,7 +74,7 @@ class CsvManager:
     def append_bundle(self, bundle: CertificadoBundle, skip_if_exists: bool = True) -> Certificado:
         if skip_if_exists:
             existing = self.get_bundle_by_arquivo(bundle.certificado.arquivo_origem)
-            if existing:
+            if existing and existing.certificado.id == bundle.certificado.id:
                 return existing.certificado
         
         if bundle.certificado.id is None:
