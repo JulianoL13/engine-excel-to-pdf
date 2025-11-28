@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import date, datetime
+import secrets
 from pathlib import Path
 from typing import Iterable, Optional, TYPE_CHECKING
 
@@ -156,8 +157,9 @@ def generate_unique_filename(certificado: "Certificado", extensao: str = "") -> 
     if not extensao.startswith(".") and extensao:
         extensao = f".{extensao}"
     
+    prefix = secrets.token_hex(2)
     suffix = f"-{id_suffix}" if id_suffix else ""
-    return f"{nome_fantasia}_{cnpj_short}_{numero_cert}_{timestamp}{suffix}{extensao}"
+    return f"{prefix}-{nome_fantasia}_{cnpj_short}_{numero_cert}_{timestamp}{suffix}{extensao}"
 
 
 def ensure_path(path_like) -> Path:
